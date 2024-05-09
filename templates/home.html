@@ -1,0 +1,55 @@
+{% extends 'base.html' %} 
+{% block content %}
+
+<form method="post" class="buttons">
+    
+    <h3 class="form-header-create" style="color: black; font-size: 24px; padding-bottom: 20px;">Create a Chat Room</h3>
+    <h3 class="form-header-join" style="display: none; color: black; font-size: 24px; padding-bottom: 20px;">Join a Chat Room</h3>
+    <div>
+        <label style="color: grey; font-size: 13px; margin-bottom: 20px">What is your nickname?</label><br>
+        <input type="text" placeholder="Enter your nickname" name="name" value="{{ name }}" style="border: 2px solid purple; font-size: 15px; border-radius: 12px; padding: 5px; font-family: 'Poppins', sans-serif;">
+    </div>
+    <div id="join-room" style="display: none;">
+        <label style="color: grey; font-size: 13px; margin-bottom: 20px">Room Code</label><br>
+        <input type="text" placeholder="Enter room code" name="code" value="{{ code }}" style="border: 2px solid purple; font-size: 15px; border-radius: 15px; padding: 5px; font-family: 'Poppins', sans-serif;">
+        <p style="color: grey; font-size: 13px; text-align:center;"> <a href="#" onclick="toggleJoinRoom();">Create a room</a></p>
+    </div>
+    <p class="join-text" style="color: grey; font-size: 13px;">Do you have a code to an existing room? <a href="#" onclick="toggleJoinRoom();">Join a room</a></p>
+    <button type="submit" name="action" value="create" class="create-btn" style="border-radius: 8px; padding: 10px; background-color: purple; color: white;">Create</button>
+    <button type="submit" name="action" value="join" class="join-btn" style="display: none; border-radius: 8px; padding: 10px; background-color: purple; color: white;">Join</button>
+    {% if error %}
+    <ul>
+        <li style="color: red; font-size: 13px;">{{ error }}</li>
+    </ul>
+    {% endif %}
+</form>
+
+<script>
+    function toggleJoinRoom() {
+        var joinRoomDiv = document.getElementById("join-room");
+        var joinBtn = document.querySelector(".join-btn");
+        var createBtn = document.querySelector(".create-btn");
+        var joinTxt = document.querySelector(".join-text")
+        var formHdrCr = document.querySelector(".form-header-create")
+        var formHdrJn = document.querySelector(".form-header-join")
+
+        if (joinRoomDiv.style.display === "none") {
+            joinRoomDiv.style.display = "block";
+            joinBtn.style.display = "inline-block";
+            createBtn.style.display = "none";
+            joinTxt.style.display = "none";
+            formHdrCr.style.display = "none";
+            formHdrJn.style.display = "inline-block";
+            
+        } else {
+            joinRoomDiv.style.display = "none";
+            joinBtn.style.display = "none";
+            createBtn.style.display = "inline-block";
+            joinTxt.style.display = "inline-block";
+            formHdrJn.style.display = "none";
+            formHdrCr.style.display = "inline-block";
+            
+        }
+    }
+</script>
+{% endblock %}

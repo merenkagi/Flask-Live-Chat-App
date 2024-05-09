@@ -1,0 +1,126 @@
+<!-- room.html -->
+{% extends 'base.html' %} 
+{% block content %}
+<div class="chat-container">
+    <div class="user-info">
+        <h3>Welcome, {{ session['name'] }}</h3>
+    </div>
+    <div class="room-code">
+        <h2>Room Code: {{ code }}</h2>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button type="button" id="send-button">Send</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+<script type="text/javascript">
+    var socket = io();
+    const messagesContainer = document.getElementById("chat-messages");
+    const messageInput = document.getElementById("message-input");
+    const sendButton = document.getElementById("send-button");
+    let systemAlertDisplayed = false;
+    const currentUser = "{{ session['name'] }}";
+
+    // Function to generate a color based on the user's name
+    function getUsernameColor(username) {
+        const hash = Array.from(username).reduce((acc, char) => char.charCodeAt(0) + acc, 0);
+        const hue = hash % 360;
+        return `hsl(${hue}, 70%, 70%)`;
+    }
+
+    // Function to generate a random color based on the user's name
+    function getUsernameColor(username) {
+        // Generate a random hue value between 0 and 360
+        const hue = Math.floor(Math.random() * 360);
+        return `hsl(${hue}, 70%, 70%)`; // Return the random color in HSL format
+    }
+
+    // Function to get current timestamp
+    function getTimeStamp() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
+    // Display the room code when the user joins the room
+    socket.on("connect", () => {
+        const name = currentUser;
+        if (!systemAlertDisplayed) {
+            showAlert(`You (${name}) joined the room. Room Code: {{ code }}`);
+            systemAlertDisplayed = true;
+        }
+    });
+
+    socket.on("message", (data) => {
+        const { name, message } = data;
+        if (name === "System") {
+            if (!systemAlertDisplayed) {
+                showAlert(message);
+                systemAlertDisplayed = true;
+            }
+        } else if (name !== currentUser) {
+            displayUserMessage(name, message);
+        }
+    });
+
+    socket.on("userEntered", (name) => {
+        showAlert(`${name} has entered the room.`);
+    });
+
+    socket.on("userLeft", (name) => {
+        showAlert(`${name} has left the room.`);
+    });
+
+    sendButton.addEventListener("click", () => {
+        sendMessage();
+    });
+
+    messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            sendMessage();
+        }
+    });
+
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message !== "") {
+            socket.emit("message", { data: message });
+            displayUserMessage(currentUser, message); // Displaying the message for the current user
+            messageInput.value = "";
+        }
+    }
+
+    function displayUserMessage(name, message) {
+        const messageElement = document.createElement("div");
+        const timeStamp = getTimeStamp();
+        messageElement.classList.add("user-message");
+        if (name === currentUser) {
+            messageElement.style.backgroundColor = "#000000"; // Black for current user
+            messageElement.style.color = "#ffffff"; // White text for visibility
+            messageElement.innerHTML = `
+            <div class="message-content">
+                <span class="message-text">${message}</span>
+                <span class="message-timestamp">${timeStamp}</span>
+            </div>`;
+        } else {
+            messageElement.classList.add("other-user"); // Add class for other users
+            messageElement.innerHTML = `
+            <div class="message-content">
+                <span class="message-text;"><strong>${name}:</strong><br> ${message}</span>
+                <span class="message-timestamp">${timeStamp}</span>
+            </div>`;
+        }
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function showAlert(message) {
+        alert(message);
+    }
+</script>
+{% endblock %}
